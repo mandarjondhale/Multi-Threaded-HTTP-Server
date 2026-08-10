@@ -1,0 +1,5 @@
+# No external dependencies — the project uses only Python standard library.
+# Python >= 3.10 required (for union type hints using `|`)
+#
+# Optional: install if you want enhanced CLI colour output
+# colorama>=0.4.6

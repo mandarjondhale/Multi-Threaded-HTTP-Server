@@ -1,0 +1,48 @@
+============================================================
+  LOAD TEST BOTTLENECK REPORT
+  Generated: 2026-08-03 19:06:14
+============================================================
+
+  Target URL  : http://127.0.0.1:8080/workload/cpu?intensity=500
+  Threads     : 50
+  Duration    : 30s
+
+── Performance ─────────────────────────────────────────────
+  Total Requests   : 20392
+  Successful       : 20392
+  Errors           : 0
+  Error Rate       : 0.0%
+  Throughput (RPS) : 650.2
+
+── Latency (ms) ─────────────────────────────────────────────
+  Min  : 1.59
+  Avg  : 67.29
+  p50  : 70.31
+  p90  : 116.78
+  p95  : 130.9
+  p99  : 159.92
+  Max  : 252.42
+
+── Status Codes ─────────────────────────────────────────────
+  HTTP 200 : 20392
+
+── Memory Assessment ─────────────────────────────────────────
+  Snapshots        : 14
+  Duration         : 26.31s
+  Memory Growth    : 512,931 bytes
+  Growth Rate      : 19,499.2 bytes/sec
+  Peak Usage       : 637.6 KB
+  Leak Signal      : MEDIUM — elevated allocation rate
+
+  Top Growing Call Sites:
+    C:\Users\manda\OneDrive\Desktop\workspace\load_tester\generator.py:148  +332.98 KB  (+14207 objects)
+    C:\Users\manda\OneDrive\Desktop\workspace\load_tester\metrics.py:58  +168.91 KB  (+1 objects)
+    C:\Users\manda\AppData\Local\Python\pythoncore-3.14-64\Lib\urllib\request.py:490  +25.63 KB  (+486 objects)
+    C:\Users\manda\AppData\Local\Python\pythoncore-3.14-64\Lib\email\message.py:528  +21.25 KB  (+340 objects)
+    C:\Users\manda\AppData\Local\Python\pythoncore-3.14-64\Lib\urllib\request.py:504  +17.53 KB  (+359 objects)
+
+── Bottleneck Analysis ──────────────────────────────────────
+  ✓  No critical bottleneck detected at this load level
+     Throughput: 650.2 RPS  |  p99 latency: 159.92 ms
+
+============================================================

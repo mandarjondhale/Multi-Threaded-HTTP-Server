@@ -6,15 +6,11 @@ Registered endpoints:
   GET  /api/status             → server health + thread pool stats (JSON)
   GET  /workload/cpu           → CPU-intensive task (SHA-256 hashing loop)
   GET  /workload/io            → I/O-bound simulation (sleep)
-  POST /api/loadtest/start     → start a load test run
-  POST /api/loadtest/stop      → stop a running load test
-  GET  /api/loadtest/status    → get live load test metrics
   GET  <anything else>         → tries to serve from public/ directory
 """
 
 import os
 import time
-import math
 import hashlib
 from server.http_handler import (
     HTTPRequest,
@@ -42,22 +38,15 @@ class Router:
         self._register()
 
     def _register(self):
-        self._routes["GET"]["/api/status"]           = self._status
-        self._routes["GET"]["/workload/cpu"]          = self._workload_cpu
-        self._routes["GET"]["/workload/io"]           = self._workload_io
-        self._routes["GET"]["/api/loadtest/status"]   = self._loadtest_status
-        self._routes["POST"]["/api/loadtest/start"]   = self._loadtest_start
-        self._routes["POST"]["/api/loadtest/stop"]    = self._loadtest_stop
+        self._routes["GET"]["/api/status"]    = self._status
+        self._routes["GET"]["/workload/cpu"]  = self._workload_cpu
+        self._routes["GET"]["/workload/io"]   = self._workload_io
 
     # ------------------------------------------------------------------ #
     #  Dispatch                                                            #
     # ------------------------------------------------------------------ #
 
     def dispatch(self, request: HTTPRequest) -> bytes:
-        # Handle CORS pre-flight
-        if request.method == "OPTIONS":
-            return build_response(204, b"", keep_alive=request.keep_alive)
-
         handler = self._routes.get(request.method, {}).get(request.path)
         if handler:
             return handler(request)
@@ -117,32 +106,10 @@ class Router:
         elapsed_ms = (time.perf_counter() - t0) * 1_000
 
         return build_response(200, {
-            "workload":       "io",
+            "workload":        "io",
             "target_delay_ms": delay_ms,
             "actual_delay_ms": round(elapsed_ms, 3),
         }, keep_alive=req.keep_alive)
-
-    # ---- Load test proxy methods ---- #
-
-    def _loadtest_start(self, req: HTTPRequest) -> bytes:
-        from load_tester.generator import load_tester
-        payload = req.json()
-        result = load_tester.start(
-            url=payload.get("url", f"http://127.0.0.1:8080/workload/cpu?intensity=500"),
-            threads=int(payload.get("threads", 20)),
-            duration=int(payload.get("duration", 15)),
-            ramp_up=int(payload.get("ramp_up", 0)),
-        )
-        return build_response(200, result, keep_alive=req.keep_alive)
-
-    def _loadtest_stop(self, req: HTTPRequest) -> bytes:
-        from load_tester.generator import load_tester
-        result = load_tester.stop()
-        return build_response(200, result, keep_alive=req.keep_alive)
-
-    def _loadtest_status(self, req: HTTPRequest) -> bytes:
-        from load_tester.generator import load_tester
-        return build_response(200, load_tester.status(), keep_alive=req.keep_alive)
 
     # ------------------------------------------------------------------ #
     #  Static File Serving                                                 #

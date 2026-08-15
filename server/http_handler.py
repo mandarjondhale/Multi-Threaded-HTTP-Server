@@ -5,7 +5,7 @@ Parses raw TCP byte streams into structured HTTPRequest objects and
 serialises HTTPResponse objects back to wire-format bytes.
 
 Supports:
-  - Methods: GET, POST, OPTIONS, HEAD
+  - Methods: GET, POST, HEAD
   - Query-string parameter parsing
   - Connection: keep-alive / close
   - JSON and binary response bodies
@@ -133,13 +133,10 @@ def build_response(
     phrase = _STATUS_PHRASES.get(status, "Unknown")
 
     headers = {
-        "Server":                       "PyMTWebServer/1.0",
-        "Content-Type":                 content_type,
-        "Content-Length":               str(len(body)),
-        "Connection":                   "keep-alive" if keep_alive else "close",
-        "Access-Control-Allow-Origin":  "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Server":         "PyMTWebServer/1.0",
+        "Content-Type":   content_type,
+        "Content-Length": str(len(body)),
+        "Connection":     "keep-alive" if keep_alive else "close",
     }
     if extra_headers:
         headers.update(extra_headers)

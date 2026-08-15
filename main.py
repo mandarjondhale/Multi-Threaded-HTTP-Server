@@ -123,7 +123,7 @@ def cmd_report(args: argparse.Namespace) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="main.py",
-        description="Multi-Threaded Web Server with Load Testing & Memory Profiling",
+        description="Multi-Threaded Web Server with Load Testing",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

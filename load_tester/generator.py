@@ -25,7 +25,6 @@ import threading
 import urllib.request
 import urllib.error
 from load_tester.metrics import MetricsCollector
-from load_tester.memory_profiler import MemoryProfiler
 
 
 REPORTS_DIR = os.path.join(os.path.dirname(__file__), "..", "reports")
@@ -43,7 +42,6 @@ class LoadTester:
         self._end_time = 0.0
         self._start_ts = 0.0
         self._collector = MetricsCollector()
-        self._mem_profiler = MemoryProfiler(interval=2.0)
         self._worker_threads: list[threading.Thread] = []
 
     # ------------------------------------------------------------------ #
@@ -90,8 +88,6 @@ class LoadTester:
                 daemon=True,
             )
             monitor.start()
-
-            self._mem_profiler.start()
 
             return {
                 "status":   "started",
@@ -161,8 +157,7 @@ class LoadTester:
             self._finalize()
 
     def _finalize(self) -> None:
-        """Stop memory profiler, collect metrics, write bottleneck report."""
-        self._mem_profiler.stop()
+        """Collect metrics and write bottleneck report."""
         self._collector.stop_timer()
         self._write_report()
 
@@ -173,7 +168,6 @@ class LoadTester:
         path = os.path.join(REPORTS_DIR, f"report_{ts}.txt")
 
         metrics = self._collector.summary()
-        mem_report = self._mem_profiler.report()
 
         lines = [
             "=" * 60,
@@ -196,8 +190,6 @@ class LoadTester:
             f"  Min  : {metrics['latency_min_ms']}",
             f"  Avg  : {metrics['latency_avg_ms']}",
             f"  p50  : {metrics['p50']}",
-            f"  p90  : {metrics['p90']}",
-            f"  p95  : {metrics['p95']}",
             f"  p99  : {metrics['p99']}",
             f"  Max  : {metrics['latency_max_ms']}",
             "",
@@ -206,31 +198,11 @@ class LoadTester:
         for code, count in metrics.get("status_codes", {}).items():
             lines.append(f"  HTTP {code} : {count}")
 
-        lines += [
-            "",
-            "── Memory Assessment ─────────────────────────────────────────",
-            f"  Snapshots        : {mem_report.get('snapshot_count', 'N/A')}",
-            f"  Duration         : {mem_report.get('total_duration_seconds', 'N/A')}s",
-            f"  Memory Growth    : {mem_report.get('growth_bytes', 0):,} bytes",
-            f"  Growth Rate      : {mem_report.get('growth_rate_bytes_per_sec', 0):,.1f} bytes/sec",
-            f"  Peak Usage       : {mem_report.get('peak_kb', 0):,.1f} KB",
-            f"  Leak Signal      : {mem_report.get('leak_signal', 'N/A')}",
-        ]
-
-        if mem_report.get("top_growing_sites"):
-            lines.append("")
-            lines.append("  Top Growing Call Sites:")
-            for site in mem_report["top_growing_sites"][:5]:
-                lines.append(
-                    f"    {site['file']}:{site['line']}  "
-                    f"+{site['size_diff_kb']:.2f} KB  ({site['count_diff']:+d} objects)"
-                )
-
         # Bottleneck identification
         lines += ["", "── Bottleneck Analysis ──────────────────────────────────────"]
-        rps   = metrics["rps"]
-        p99   = metrics["p99"]
-        err   = metrics["error_rate_pct"]
+        rps = metrics["rps"]
+        p99 = metrics["p99"]
+        err = metrics["error_rate_pct"]
 
         if err > 5.0:
             lines.append("  ⚠  HIGH ERROR RATE — likely CPU or queue saturation")
@@ -238,9 +210,6 @@ class LoadTester:
         elif p99 > 2000:
             lines.append("  ⚠  HIGH p99 LATENCY — I/O or network bottleneck detected")
             lines.append("     Check disk I/O, external service latency, or NIC bandwidth")
-        elif mem_report.get("growth_rate_bytes_per_sec", 0) > 50_000:
-            lines.append("  ⚠  MEMORY GROWTH DETECTED — potential memory leak")
-            lines.append("     Review connection cleanup, buffer handling, and object lifetimes")
         elif rps < 10:
             lines.append("  ⚠  LOW THROUGHPUT — single-thread bottleneck or blocked workers")
             lines.append("     Profile CPU usage; consider increasing thread pool size")
@@ -256,5 +225,5 @@ class LoadTester:
         print(f"[LoadTester] Report saved → {path}")
 
 
-# Singleton used by routes.py
+# Singleton used by the CLI
 load_tester = LoadTester()

@@ -3,7 +3,7 @@ metrics.py — Latency statistics and load-test result aggregation.
 
 Calculates:
   - Requests per second (RPS)
-  - Latency: min, max, average, p50, p90, p95, p99
+  - Latency: min, max, average, p50, p99
   - Success/failure counts and error rate
   - Per-status-code breakdown
 """
@@ -78,7 +78,6 @@ class MetricsCollector:
         rps = total / duration if total > 0 else 0.0
 
         if not lats:
-            percentiles = {k: 0.0 for k in ("p50", "p90", "p95", "p99")}
             return {
                 "total_requests":     0,
                 "successful":         0,
@@ -86,7 +85,8 @@ class MetricsCollector:
                 "error_rate_pct":     0.0,
                 "duration_seconds":   round(duration, 2),
                 "rps":                0.0,
-                **percentiles,
+                "p50":                0.0,
+                "p99":                0.0,
                 "latency_min_ms":     0.0,
                 "latency_max_ms":     0.0,
                 "latency_avg_ms":     0.0,
@@ -110,8 +110,6 @@ class MetricsCollector:
             "duration_seconds": round(duration, 2),
             "rps":              round(rps, 2),
             "p50":              round(percentile(0.50), 2),
-            "p90":              round(percentile(0.90), 2),
-            "p95":              round(percentile(0.95), 2),
             "p99":              round(percentile(0.99), 2),
             "latency_min_ms":   round(sorted_lats[0], 2),
             "latency_max_ms":   round(sorted_lats[-1], 2),

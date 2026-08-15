@@ -4,10 +4,10 @@ A high-performance, lightweight **Multi-Threaded HTTP Web Server** and **Closed-
 
 ## 🚀 Key Features
 
-- **Custom TCP & HTTP Protocol Handler**: Implements HTTP/1.1 request parsing, response building, keep-alive connections, and CORS support without external web framework dependencies.
+- **Custom TCP & HTTP Protocol Handler**: Implements HTTP/1.1 request parsing, response building, and keep-alive connections without external web framework dependencies.
 - **Worker Thread Pool Architecture**: Thread-pooled execution queue (`ThreadPool`) for handling incoming client socket requests concurrently.
 - **Integrated Load Testing Engine**: Standalone closed-loop virtual client generator with configurable thread counts, test durations, and ramp-up scheduling.
-- **Real-Time Metrics & Profiling**: Tracks Requests Per Second (RPS), error rates, memory footprint, and response latency percentiles ($p_{50}$, $p_{95}$, $p_{99}$).
+- **Real-Time Metrics**: Tracks Requests Per Second (RPS), error rates, and response latency percentiles (p50, p99).
 - **Built-in Workload Simulations**: Pre-configured routes for CPU-heavy benchmarking (repetitive SHA-256 hashing) and I/O-bound latency simulation (`time.sleep`).
 
 ---
@@ -17,17 +17,16 @@ A high-performance, lightweight **Multi-Threaded HTTP Web Server** and **Closed-
 ```
 .
 ├── main.py                  # CLI entry point (server, loadtest, report)
-├── verify.py                # Comprehensive component verification & test suite
+├── verify.py                # Component verification & test suite
 ├── requirements.txt         # Project requirements (Python 3.10+ standard library)
 ├── server/                  # HTTP Server package
 │   ├── tcp_server.py        # Socket server & connection listener
 │   ├── thread_pool.py       # Custom task queue & worker thread management
 │   ├── http_handler.py      # HTTP request parser & response builder
 │   └── routes.py            # API routes & static file handlers
-└── load_tester/             # Load Testing & Profiling package
+└── load_tester/             # Load Testing package
     ├── generator.py         # Multi-threaded virtual client load generator
-    ├── metrics.py           # Metrics collector & percentile calculation
-    └── memory_profiler.py   # Memory tracking & snapshot utility
+    └── metrics.py           # Metrics collector & percentile calculation
 ```
 
 ---
@@ -40,7 +39,7 @@ A high-performance, lightweight **Multi-Threaded HTTP Web Server** and **Closed-
 
 ### 1. Verify Components
 
-Run the verification test suite to ensure all server modules, thread pools, and metrics collectors pass health checks:
+Run the verification suite to ensure all server modules, thread pools, and metrics collectors pass health checks:
 
 ```bash
 python verify.py
@@ -55,11 +54,12 @@ python main.py server --host 0.0.0.0 --port 8080 --workers 16 --queue 1000
 ```
 
 Available endpoints:
-- `GET /api/status` — Server health metrics & active thread pool stats
-- `GET /workload/cpu?intensity=1000` — SHA-256 CPU workload benchmark
-- `GET /workload/io?delay=50` — I/O latency workload benchmark
-- `POST /api/loadtest/start` — Trigger load test remotely
-- `GET /api/loadtest/status` — Fetch real-time load test status
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/status` | GET | Server health metrics & active thread pool stats |
+| `/workload/cpu?intensity=1000` | GET | SHA-256 CPU workload benchmark |
+| `/workload/io?delay=50` | GET | I/O latency workload benchmark |
 
 ### 3. Run a Load Test
 
@@ -69,9 +69,11 @@ In a separate terminal (while the server is running), execute a closed-loop load
 python main.py loadtest --url http://127.0.0.1:8080/workload/cpu?intensity=500 --threads 20 --duration 15
 ```
 
+Live output is printed every 2 seconds showing RPS, p50, p99, and error rate. A bottleneck report is saved to `reports/` when the test finishes.
+
 ### 4. View Performance Reports
 
-Inspect the latest bottleneck and performance report saved in `reports/`:
+Inspect the latest bottleneck report saved in `reports/`:
 
 ```bash
 python main.py report

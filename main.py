@@ -89,11 +89,11 @@ def cmd_loadtest(args: argparse.Namespace) -> None:
 
     # Final summary
     final = load_tester.status()["metrics"]
-    print("\n─── Final Results ───────────────────────────────")
+    print("\n--- Final Results -----------------------------------------------")
     for k, v in final.items():
         print(f"  {k:<25}: {v}")
-    print("─────────────────────────────────────────────────")
-    print("\n[LoadTest] Report saved in reports/  (run: python main.py report)\n")
+    print("-------------------------------------------------")
+    print("\n[LoadTest] Report saved in reports/ (run: python main.py report)\n")
 
 
 def cmd_report(args: argparse.Namespace) -> None:

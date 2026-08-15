@@ -222,7 +222,7 @@ class LoadTester:
         with open(path, "w", encoding="utf-8") as fh:
             fh.write("\n".join(lines))
 
-        print(f"[LoadTester] Report saved → {path}")
+        print(f"[LoadTester] Report saved -> {path}")
 
 
 # Singleton used by the CLI

@@ -1,4 +1,4 @@
-# Optimized Multi-Threaded HTTP Server and Load Testing Suite
+# Multi-Threaded HTTP Server
 
 A high-performance, lightweight **Multi-Threaded HTTP Web Server** and **Closed-Loop Load Testing Suite** built entirely using the Python standard library.
 
